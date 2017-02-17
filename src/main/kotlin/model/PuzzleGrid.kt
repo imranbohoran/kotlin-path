@@ -7,8 +7,9 @@ class PuzzleGrid(val contents: String) {
     var yLength : Int
 
     init {
-        xLength = contents.length
-        yLength = contents.length
+        val values : List<String> = contents.split(",")
+        xLength = values.size
+        yLength = values.size
         println(contents)
     }
 
