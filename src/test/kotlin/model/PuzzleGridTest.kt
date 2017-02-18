@@ -44,4 +44,17 @@ class PuzzleGridTest {
         assertEquals(listOf("3","6","8","9"), puzzleGrid.grid[2])
         assertEquals(listOf("2","6","1","7"), puzzleGrid.grid[3])
     }
+
+    @Test
+    fun providesTheValueForGivenCoordinatesInGrid() : Unit {
+        val fileContents = javaClass.getResourceAsStream("/test-multiline-input.txt")
+                .bufferedReader()
+                .use { it.readText() }
+        val puzzleGrid = PuzzleGrid(fileContents)
+
+        assertEquals(1, puzzleGrid.valueForLocation(0,0))
+        assertEquals(6, puzzleGrid.valueForLocation(1,2))
+        assertEquals(9, puzzleGrid.valueForLocation(3,2))
+        assertEquals(1, puzzleGrid.valueForLocation(2,3))
+    }
 }
