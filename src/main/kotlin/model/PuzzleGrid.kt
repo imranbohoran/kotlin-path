@@ -21,8 +21,8 @@ class PuzzleGrid(contents: String) {
         yLength = allContent.size
     }
 
-    fun valueForLocation(x: Int, y: Int) : Int {
-        return grid[y]?.get(x)?.toInt()!!
+    fun valueForLocation(location: Location) : Int {
+        return grid[location.row]?.get(location.column)?.toInt()!!
     }
 
 }

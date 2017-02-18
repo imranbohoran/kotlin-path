@@ -52,9 +52,9 @@ class PuzzleGridTest {
                 .use { it.readText() }
         val puzzleGrid = PuzzleGrid(fileContents)
 
-        assertEquals(1, puzzleGrid.valueForLocation(0,0))
-        assertEquals(6, puzzleGrid.valueForLocation(1,2))
-        assertEquals(9, puzzleGrid.valueForLocation(3,2))
-        assertEquals(1, puzzleGrid.valueForLocation(2,3))
+        assertEquals(1, puzzleGrid.valueForLocation(Location(0,0)))
+        assertEquals(6, puzzleGrid.valueForLocation(Location(1,2)))
+        assertEquals(9, puzzleGrid.valueForLocation(Location(3,2)))
+        assertEquals(1, puzzleGrid.valueForLocation(Location(2,3)))
     }
 }
