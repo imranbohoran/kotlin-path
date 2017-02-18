@@ -1,6 +1,7 @@
 package model
 
 import org.hamcrest.CoreMatchers
+import org.hamcrest.Matchers
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThat
 import org.junit.Test
@@ -52,9 +53,22 @@ class PuzzleGridTest {
                 .use { it.readText() }
         val puzzleGrid = PuzzleGrid(fileContents)
 
-        assertEquals(1, puzzleGrid.valueForLocation(Location(0,0)))
-        assertEquals(6, puzzleGrid.valueForLocation(Location(1,2)))
-        assertEquals(9, puzzleGrid.valueForLocation(Location(3,2)))
-        assertEquals(1, puzzleGrid.valueForLocation(Location(2,3)))
+        assertEquals(1, puzzleGrid.valueForLocation(Location(1,1)))
+        assertEquals(2, puzzleGrid.valueForLocation(Location(1,2)))
+        assertEquals(9, puzzleGrid.valueForLocation(Location(3,4)))
+        assertEquals(2, puzzleGrid.valueForLocation(Location(2,3)))
+    }
+
+    @Test
+    fun providesMovementInformationForGivenCoordinatesInGrid(): Unit {
+        val fileContents = javaClass.getResourceAsStream("/test-multiline-input.txt")
+                .bufferedReader()
+                .use { it.readText() }
+        val puzzleGrid = PuzzleGrid(fileContents)
+
+        assertThat(puzzleGrid.movementInformation(Location(1,1)),Matchers.containsInAnyOrder(
+                Movement(PuzzleDirection.D, 1), Movement(PuzzleDirection.R, 1)))
+
+        assertThat(puzzleGrid.movementInformation(Location(3,4)),Matchers.emptyIterable())
     }
 }
