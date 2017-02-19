@@ -5,6 +5,8 @@ import org.hamcrest.Matchers
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThat
 import org.junit.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class PuzzleGridTest {
 
@@ -70,5 +72,25 @@ class PuzzleGridTest {
                 Movement(PuzzleDirection.D, 1), Movement(PuzzleDirection.R, 1)))
 
         assertThat(puzzleGrid.movementInformation(Location(3,4)),Matchers.emptyIterable())
+    }
+
+    @Test
+    fun puzzleSolvedWhenLocationIsTheEnd(): Unit {
+        val fileContents = javaClass.getResourceAsStream("/test-multiline-input.txt")
+                .bufferedReader()
+                .use { it.readText() }
+        val puzzleGrid = PuzzleGrid(fileContents)
+
+        assertTrue(puzzleGrid.isSolved(Location(4,4)))
+    }
+
+    @Test
+    fun puzzleNotSolvedWhenLocationIsNotTheEnd(): Unit {
+        val fileContents = javaClass.getResourceAsStream("/test-multiline-input.txt")
+                .bufferedReader()
+                .use { it.readText() }
+        val puzzleGrid = PuzzleGrid(fileContents)
+
+        assertFalse(puzzleGrid.isSolved(Location(3,4)))
     }
 }

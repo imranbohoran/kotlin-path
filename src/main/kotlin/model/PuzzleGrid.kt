@@ -8,6 +8,8 @@ class PuzzleGrid(contents: String) {
     var xLength : Int
     var yLength : Int
 
+    val startingLocation : Location = Location(0,0)
+
     init {
         val allContent = contents.trim().lines()
         var index : Int = 0
@@ -58,6 +60,10 @@ class PuzzleGrid(contents: String) {
             PuzzleDirection.R -> return ((location.column - 1) + currentValue) < xLength
             else -> return false
         }
+    }
+
+    fun isSolved(location: Location): Boolean {
+        return (location.row == xLength && location.column == yLength)
     }
 
 }
