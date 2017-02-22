@@ -69,7 +69,7 @@ class PuzzleGridTest {
         val puzzleGrid = PuzzleGrid(fileContents)
 
         assertThat(puzzleGrid.movementInformation(Location(1,1)),Matchers.containsInAnyOrder(
-                Movement(PuzzleDirection.D, 1), Movement(PuzzleDirection.R, 1)))
+                Movement(PuzzleDirection.D, 1, Location(1,1)), Movement(PuzzleDirection.R, 1, Location(1,1))))
 
         assertThat(puzzleGrid.movementInformation(Location(3,4)),Matchers.emptyIterable())
     }
@@ -92,5 +92,18 @@ class PuzzleGridTest {
         val puzzleGrid = PuzzleGrid(fileContents)
 
         assertFalse(puzzleGrid.isSolved(Location(3,4)))
+    }
+
+    @Test
+    fun shouldSolvePuzzle(): Unit {
+        val fileContents = javaClass.getResourceAsStream("/test-puzzle.txt")
+                .bufferedReader()
+                .use { it.readText() }
+        val puzzleGrid = PuzzleGrid(fileContents)
+
+        val puzzleResult = puzzleGrid.solve()
+
+        assertThat(puzzleResult?.resultPath, Matchers.contains(PuzzleDirection.R, PuzzleDirection.D, PuzzleDirection.R))
+
     }
 }
