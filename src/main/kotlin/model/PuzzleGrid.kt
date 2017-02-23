@@ -1,21 +1,22 @@
 package model
 
+import model.PuzzleDirection.*
 import java.util.*
 
 class PuzzleGrid(contents: String) {
 
     val grid = mutableMapOf<Int, List<String>>()
-    var xLength : Int
-    var yLength : Int
+    var xLength: Int
+    var yLength: Int
 
-    val startingLocation : Location = Location(1,1)
+    val startingLocation: Location = Location(1, 1)
 
     init {
         val allContent = contents.trim().lines()
-        var index : Int = 0
+        var index: Int = 0
         allContent.map { line ->
             val values = line.split(",")
-            if(values.size != allContent.size) {
+            if (values.size != allContent.size) {
                 throw IllegalArgumentException("Supplied data does not form a square")
             }
             grid.put(index, values)
@@ -25,150 +26,172 @@ class PuzzleGrid(contents: String) {
         yLength = allContent.size
     }
 
-    fun valueForLocation(location: Location) : Int {
+    fun valueForLocation(location: Location): Int {
         return grid[location.row - 1]?.get(location.column - 1)?.toInt()!!
     }
 
-    fun movementInformation(currentLocation: Location) : ArrayList<Movement> {
+    fun movementInformation(currentLocation: Location, previousMove: Movement?): ArrayList<Movement> {
         val currentValue = valueForLocation(currentLocation)
-        val movements : ArrayList<Movement> = ArrayList()
+        val movements: ArrayList<Movement> = ArrayList()
 
-        if(canMove(PuzzleDirection.U, currentLocation, currentValue)) {
-            movements.add(Movement(PuzzleDirection.U, currentValue, currentLocation))
+        if (canMove(R, currentLocation, currentValue, previousMove)) {
+            movements.add(Movement(R, currentValue, currentLocation))
         }
 
-        if(canMove(PuzzleDirection.D, currentLocation, currentValue)) {
-            movements.add(Movement(PuzzleDirection.D, currentValue, currentLocation))
+        if (canMove(D, currentLocation, currentValue, previousMove)) {
+            movements.add(Movement(D, currentValue, currentLocation))
         }
 
-        if(canMove(PuzzleDirection.L, currentLocation, currentValue)) {
-            movements.add(Movement(PuzzleDirection.L, currentValue, currentLocation))
+        if (canMove(U, currentLocation, currentValue, previousMove)) {
+            movements.add(Movement(U, currentValue, currentLocation))
         }
 
-        if(canMove(PuzzleDirection.R, currentLocation, currentValue)) {
-            movements.add(Movement(PuzzleDirection.R, currentValue, currentLocation))
+        if (canMove(L, currentLocation, currentValue, previousMove)) {
+            movements.add(Movement(L, currentValue, currentLocation))
         }
 
         return movements
     }
 
-    private fun canMove(direction: PuzzleDirection, location: Location, currentValue: Int): Boolean {
-        when(direction) {
-            PuzzleDirection.U -> return ((location.row - 1) - currentValue) > 0
-            PuzzleDirection.D -> return ((location.row - 1) + currentValue) < yLength
-            PuzzleDirection.L -> return ((location.column - 1) - currentValue) >= 0
-            PuzzleDirection.R -> return ((location.column - 1) + currentValue) < xLength
+    private fun canMove(direction: PuzzleDirection, location: Location, currentValue: Int, previousMove: Movement?): Boolean {
+        if (currentValue == 0)
+            return false
+
+        when (direction) {
+            U -> {
+                if ((D == previousMove?.direction) && (currentValue == previousMove?.distance))
+                    return false
+
+                return ((location.row - 1) - currentValue) > 0
+            }
+            D -> {
+                if ((U == previousMove?.direction) && (currentValue == previousMove?.distance))
+                    return false
+
+                return ((location.row - 1) + currentValue) < yLength
+            }
+            L -> {
+                if ((R == previousMove?.direction) && (currentValue == previousMove?.distance))
+                    return false
+
+                return ((location.column - 1) - currentValue) >= 0
+            }
+            R -> {
+                if ((L == previousMove?.direction) && (currentValue == previousMove?.distance))
+                    return false
+
+                return ((location.column - 1) + currentValue) < xLength
+            }
             else -> return false
         }
     }
+
 
     fun isSolved(location: Location): Boolean {
         return (location.row == xLength && location.column == yLength)
     }
 
     fun solve(): PuzzleResult? {
-        val result : ArrayList<Movement> = ArrayList()
-        val movements = movementInformation(startingLocation)
-        println("Starting with location: "+ startingLocation)
-//        return solvePuzzle(startingLocation, result, movements)
-        return solvePuzzle2(startingLocation, movements, ArrayList(), ArrayList(), result)
+        val movements = movementInformation(startingLocation, null)
+        return solvePuzzle(startingLocation, movements, ArrayList(), ArrayList())
     }
 
-    tailrec private fun solvePuzzle2(location: Location, moves: ArrayList<Movement>,
-                             visited: ArrayList<Location>, originatingMoves: ArrayList<Movement>,
-                             result: ArrayList<Movement>) : PuzzleResult? {
-        var puzzleResult : PuzzleResult? = null
+    tailrec fun solvePuzzle(location: Location, moves: ArrayList<Movement>,
+                            puzzlePath: ArrayList<Path>, movesToTry: ArrayList<PathToExercise>): PuzzleResult {
+        println("")
+        println("Processing location: (" + location.row + ", " + location.column + ") -> " + valueForLocation(location));
+        println("Current path taken: "+ puzzlePath)
+        println("")
+        println("Moves to be tried: "+ movesToTry)
+        println("--------------------------")
+        if (isSolved(location))
+            return PuzzleResult.Success(puzzlePath.map(Path::movement).map(Movement::direction))
+        if (noMoreMoves(movesToTry, puzzlePath))
+            return PuzzleResult.Fail(puzzlePath.map(Path::movement).map(Movement::direction))
+        if (needToGoBack(moves, location)) {
+            println("Have to go back **********")
+            val nextPathToExercise = movesToTry.last()
+            // reverse
+            val lastPath = puzzlePath.last()
+            puzzlePath.remove(lastPath)
+            val reverseMove = Movement(getReverseMove(lastPath.movement.direction), lastPath.movement.distance, lastPath.location)
+            puzzlePath.add(Path(nextPathToExercise.location, reverseMove))
+            movesToTry.remove(nextPathToExercise)
 
-        println("Processing location: "+ location)
-        if(isSolved(location)) {
-            return PuzzleResult.Success(result.map(Movement::direction))
-        }
-        if(needToGoBack(moves, location)) {
-            println("----No moves for " + location)
-            println("---- Before removing: "+ result)
-            result.remove(result.last())
-            println("---- After removing: "+ result)
-            val newLocation = visited.last()
-//            println("Going back to previous location: $newLocation with originating movements of : $originatingMoves")
-            visited.remove(newLocation)
-            return solvePuzzle2(newLocation, originatingMoves, visited, originatingMoves, result)
-        }
-        else {
-            val nextMove = moves.first()
-//            println("Next move is: "+ nextMove)
+            return solvePuzzle(nextPathToExercise.location, nextPathToExercise.moves, puzzlePath, movesToTry)
+        } else {
+            val nextMove = chooseNextMove(moves, puzzlePath)
+            val previousMove = if (puzzlePath.isNotEmpty()) puzzlePath.last() else null
+
             val newLocation = travel(location, nextMove)
-            println("+++++After moving new location: $newLocation with move: $nextMove")
-            result.add(nextMove)
-            println("+++++After moving result: "+ result)
-            println("")
-            visited.add(location)
-            val newMoves = movementInformation(newLocation)
-//            println("Moves for new location: "+ newMoves)
-            moves.remove(nextMove)
-            originatingMoves.addAll(moves)
-//            println("Originating moves are : "+ originatingMoves)
-            return solvePuzzle2(newLocation, newMoves, visited, originatingMoves, result)
-        }
 
-        return puzzleResult
+            val currentPath = Path(newLocation, nextMove)
+            puzzlePath.add(currentPath)
+
+            val movesForNewLocation = movementInformation(newLocation, previousMove?.movement)
+            moves.remove(nextMove)
+            movesToTry.add(PathToExercise(location, moves))
+            return solvePuzzle(newLocation, movesForNewLocation, puzzlePath, movesToTry)
+        }
+    }
+
+    private fun getReverseMove(direction: PuzzleDirection): PuzzleDirection {
+        val reverseDirection = when (direction) {
+            U -> D
+            D -> U
+            L -> R
+            R -> L
+        }
+        return reverseDirection
+    }
+
+    private fun chooseNextMove(moves: ArrayList<Movement>, puzzlePath: ArrayList<Path>): Movement {
+        // Avoid the opposite direction of the previous move first
+        val previousMove = if (puzzlePath.isNotEmpty()) puzzlePath.last() else null
+        val avoidDirection = getDirectionToAvoid(previousMove)
+        println("Direction to avoid $avoidDirection")
+        val nextPotentialMoves = moves.filter {
+            it.direction != avoidDirection
+        }
+        val nextMove = if (nextPotentialMoves.isNotEmpty()) nextPotentialMoves.first() else moves.first()
+        println(">> Previous move: $previousMove")
+        println(">> Next move: $nextMove")
+        return nextMove
+    }
+
+    private fun getDirectionToAvoid(previousMove: Path?): PuzzleDirection? {
+        when (previousMove?.movement?.direction) {
+            R -> return L
+            L -> return R
+            U -> return D
+            D -> return U
+        }
+        return null
+    }
+
+    private fun noMoreMoves(movesToTry: ArrayList<PathToExercise>, puzzlePath: ArrayList<Path>): Boolean {
+        return movesToTry.isEmpty() && puzzlePath.isNotEmpty()
     }
 
     private fun needToGoBack(moves: ArrayList<Movement>, currentLocation: Location): Boolean {
-        if(moves.isEmpty())
+        if (moves.isEmpty())
             return true
         else
             return moves.first().originatingLocation != currentLocation
     }
 
-    private fun travel(location: Location, nextMove: Movement) : Location {
+    private fun travel(location: Location, nextMove: Movement): Location {
         var newRow = location.row
         var newColumn = location.column
-        if(nextMove.direction == PuzzleDirection.L)
+        if (nextMove.direction == L)
             newColumn -= nextMove.distance
-        if(nextMove.direction == PuzzleDirection.R)
+        if (nextMove.direction == R)
             newColumn += nextMove.distance
-        if(nextMove.direction == PuzzleDirection.U)
+        if (nextMove.direction == U)
             newRow -= nextMove.distance
-        if(nextMove.direction == PuzzleDirection.D)
+        if (nextMove.direction == D)
             newRow += nextMove.distance
 
         return Location(newRow, newColumn)
     }
-
-    private fun solvePuzzle(location: Location, result: ArrayList<PuzzleDirection>, movements: List<Movement>): PuzzleResult? {
-        var puzzleResult : PuzzleResult? = null
-
-        loop@
-        for(movement in movements) {
-            println("Processing movement: "+ movement)
-            puzzleResult = runMove(location, result, movement)
-            when(puzzleResult) {
-                is PuzzleResult.Success -> break@loop
-            }
-        }
-        return puzzleResult
-    }
-
-    private fun runMove(location: Location, result: ArrayList<PuzzleDirection>, movement: Movement): PuzzleResult? {
-        if(isSolved(location))
-            return PuzzleResult.Success(result)
-        else
-            result.add(movement.direction)
-            var newRow = location.row
-            var newColumn = location.column
-            if(movement.direction == PuzzleDirection.R)
-                newColumn += movement.distance
-            if(movement.direction == PuzzleDirection.L)
-                newColumn -= movement.distance
-            if(movement.direction == PuzzleDirection.U)
-                newRow -= movement.distance
-            if(movement.direction == PuzzleDirection.D)
-                newRow += movement.distance
-
-            val newLocation = Location(newRow, newColumn)
-            println("New location : "+ newLocation)
-            return solvePuzzle(newLocation, result, movementInformation(newLocation))
-
-    }
-
 }

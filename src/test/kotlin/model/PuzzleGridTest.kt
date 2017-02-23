@@ -1,12 +1,15 @@
 package model
 
+import model.PuzzleDirection.*
 import org.hamcrest.CoreMatchers
 import org.hamcrest.Matchers
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThat
+import org.junit.Ignore
 import org.junit.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.test.fail
 
 class PuzzleGridTest {
 
@@ -68,10 +71,10 @@ class PuzzleGridTest {
                 .use { it.readText() }
         val puzzleGrid = PuzzleGrid(fileContents)
 
-        assertThat(puzzleGrid.movementInformation(Location(1,1)),Matchers.containsInAnyOrder(
-                Movement(PuzzleDirection.D, 1, Location(1,1)), Movement(PuzzleDirection.R, 1, Location(1,1))))
+        assertThat(puzzleGrid.movementInformation(Location(1,1),null),Matchers.containsInAnyOrder(
+                Movement(D, 1, Location(1,1)), Movement(R, 1, Location(1,1))))
 
-        assertThat(puzzleGrid.movementInformation(Location(3,4)),Matchers.emptyIterable())
+        assertThat(puzzleGrid.movementInformation(Location(3,4), null),Matchers.emptyIterable())
     }
 
     @Test
@@ -103,7 +106,25 @@ class PuzzleGridTest {
 
         val puzzleResult = puzzleGrid.solve()
 
-        assertThat(puzzleResult?.resultPath, Matchers.contains(PuzzleDirection.R, PuzzleDirection.D, PuzzleDirection.R))
-
+        when(puzzleResult) {
+            is PuzzleResult.Success -> {
+                assertThat(puzzleResult.resultPath, Matchers.contains(R, D, R))
+            } else -> fail("should have been successful")
+        }
     }
+
+    @Test
+    @Ignore
+    fun shouldSolvePuzzleCourseworkExample(): Unit {
+        val fileContents = javaClass.getResourceAsStream("/test-puzzle-2.txt")
+                .bufferedReader()
+                .use { it.readText() }
+        val puzzleGrid = PuzzleGrid(fileContents)
+
+        val puzzleResult = puzzleGrid.solve()
+
+//        R D D U L L D R R U D R D
+        assertThat(puzzleResult?.resultPath,Matchers.contains(R, D, D, U, L, L, D, R, R, U, D, R, D));
+    }
+
 }
