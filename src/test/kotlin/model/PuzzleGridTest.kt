@@ -7,6 +7,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThat
 import org.junit.Ignore
 import org.junit.Test
+import java.util.*
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.test.fail
@@ -71,10 +72,10 @@ class PuzzleGridTest {
                 .use { it.readText() }
         val puzzleGrid = PuzzleGrid(fileContents)
 
-        assertThat(puzzleGrid.movementInformation(Location(1,1),null),Matchers.containsInAnyOrder(
+        assertThat(puzzleGrid.movementInformation(Location(1,1),null, ArrayList(), ArrayList()),Matchers.containsInAnyOrder(
                 Movement(D, 1, Location(1,1)), Movement(R, 1, Location(1,1))))
 
-        assertThat(puzzleGrid.movementInformation(Location(3,4), null),Matchers.emptyIterable())
+        assertThat(puzzleGrid.movementInformation(Location(3,4), null, ArrayList(), ArrayList()),Matchers.emptyIterable())
     }
 
     @Test
@@ -114,7 +115,6 @@ class PuzzleGridTest {
     }
 
     @Test
-    @Ignore
     fun shouldSolvePuzzleCourseworkExample(): Unit {
         val fileContents = javaClass.getResourceAsStream("/test-puzzle-2.txt")
                 .bufferedReader()
@@ -125,6 +125,7 @@ class PuzzleGridTest {
 
 //        R D D U L L D R R U D R D
         assertThat(puzzleResult?.resultPath,Matchers.contains(R, D, D, U, L, L, D, R, R, U, D, R, D));
+        println("The path is : " + puzzleResult?.resultPath);
     }
 
 }
