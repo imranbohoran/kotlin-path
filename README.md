@@ -11,3 +11,5 @@ To run the puzzle solver, a new `PuzzleGrid` instance should be initialised with
 contents of a grid. And then `PuzzleGrid.solve()` find the best path.
 
 `PuzzleGridTest` contains tests for the Puzzle initialisation and solve functions.
+
+While the tests could be simply run from the IDE, they could also be run as `mvn clean test`
