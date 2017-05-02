@@ -181,16 +181,6 @@ class PuzzleGrid(contents: String) {
         }
     }
 
-    private fun getReverseMove(direction: PuzzleDirection): PuzzleDirection {
-        val reverseDirection = when (direction) {
-            U -> D
-            D -> U
-            L -> R
-            R -> L
-        }
-        return reverseDirection
-    }
-
     private fun chooseNextMove(moves: MutableList<Movement>, puzzlePath: MutableList<Path>): Movement {
         // Avoid the opposite direction of the previous move first
         val previousMove = if (puzzlePath.isNotEmpty()) puzzlePath.last() else null
